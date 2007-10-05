@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Lingua-JA-Romaji-Valid
-version:             0.01
+version:             0.02
 abstract:            see if the string is valid romanization
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.36

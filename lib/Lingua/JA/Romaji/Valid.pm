@@ -3,7 +3,7 @@ package Lingua::JA::Romaji::Valid;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 my %aliases = (
   loose         => 'ISO3602Loose',
@@ -21,8 +21,8 @@ sub new {
   my ($class, $rule) = @_;
   my $self  = bless {}, $class;
 
-  $rule = $aliases{$rule} if exists $aliases{$rule};
   $rule ||= 'ISO3602Loose';
+  $rule = $aliases{$rule} if exists $aliases{$rule};
 
   my $package = 'Lingua::JA::Romaji::Valid::Rule::'.$rule;
   eval "require $package"; die $@ if $@;
@@ -41,10 +41,15 @@ sub as_romaji {
 
   return unless $self->{rule}->_prepare( \$word, @extra_filters );
 
-  my @kanas  = $word =~ /((?:[^aeiou]*)(?:[aeioun]))/gc;
-  my ($rest) = $word =~ /\G(.+)$/;
+  my @kanas  = $word =~ /((?:[^aeiou]*)(?:[aeioun]))/g;
+  my $got    = join '', @kanas;
+  my ($rest) = $word =~ /^$got(.+)/;
 
-  return if $rest;  # always prohibit consonant ending but 'n'
+  if ( $rest ) {
+    # always prohibit consonant ending but 'n'
+    warn "consonant ending: $rest" if $self->verbose;
+    return;
+  }
 
   foreach my $kana ( @kanas ) {
     return unless $self->{rule}->is_valid( $kana, @extra_filters );
@@ -64,10 +69,15 @@ sub as_name {
   );
   return unless $self->{rule}->_prepare( \$word, @extra_filters );
 
-  my @kanas  = $word =~ /((?:[^aeiou]*)(?:[aeioun]))/gc;
-  my ($rest) = $word =~ /\G(.+)$/;
+  my @kanas  = $word =~ /((?:[^aeiou]*)(?:[aeioun]))/g;
+  my $got    = join '', @kanas;
+  my ($rest) = $word =~ /^$got(.+)/;
 
-  return if $rest;  # always prohibit consonant ending but 'n'
+  if ( $rest ) {
+    # always prohibit consonant ending but 'n'
+    warn "consonant ending: $rest" if $self->verbose;
+    return;
+  }
 
   foreach my $kana ( @kanas ) {
     return unless $self->{rule}->is_valid( $kana, @extra_filters );
@@ -105,7 +115,7 @@ Lingua::JA::Romaji::Valid - see if the string is valid romanization
 =head1 SYNOPSIS
 
     use Lingua::JA::Romaji::Valid;
-    my $validator = Lingua::JA::Romaji::Valid->new('loose');
+    my $validator = Lingua::JA::Romaji::Valid->new('liberal');
 
     # this is valid romanization of 'violin'
     $validator->as_romaji('vaiorin');  # true
@@ -136,7 +146,9 @@ untraditional one.
 
 =head2 new
 
-creates a validator object.
+creates a validator object. You can specify which rule you
+want to use through an alias, or a basename of the rule
+package (::Rule::<Basename>). See also 'aliases' below.
 
 =head2 as_romaji
 
@@ -155,7 +167,17 @@ have a middle name.
 
 =head2 aliases
 
-returns all the aliases available
+returns all the aliases available, i.e.:
+
+  liberal       => Liberal
+  loose         => ISO3602Loose (default)
+  kunrei        => ISO3602
+  japanese      => ISO3602Strict
+  traditional   => Hepburn
+  hepburn       => HepburnRevised
+  international => HepburnRevisedInternational
+  railway       => HepburnRailway
+  passport      => HepburnPassport
 
 =head2 verbose
 
