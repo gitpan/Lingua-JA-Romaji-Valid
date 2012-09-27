@@ -8,7 +8,7 @@ sub new { bless {}, shift }
 sub normalize_n_with_apostrophe {
   my ($self, $word_ref) = @_;
 
-  $$word_ref =~ s/n'([aeiouy])/n$1/g;
+  $$word_ref =~ s/n\\?'([aeiouy])/n$1/g;
 
   return 1;
 }
@@ -16,7 +16,7 @@ sub normalize_n_with_apostrophe {
 sub normalize_n_with_hyphen {
   my ($self, $word_ref) = @_;
 
-  $$word_ref =~ s/n[\-]([aeiouy])/n$1/g;
+  $$word_ref =~ s/n\\?[\-]([aeiouy])/n$1/g;
 
   return 1;
 }
@@ -46,7 +46,7 @@ sub normalize_long_vowel_with_symbols {
 
   # strictly speaking, this may be wrong (eg. o-hira, not oh-ira)
   # but both cases should be valid in the end.
-  $$word_ref =~ s/([aeiou])[_\-^]/$1/g;
+  $$word_ref =~ s/([aeiou])\\?[_\-^]/$1/g;
 
   return 1;
 }

@@ -3,7 +3,7 @@ package Lingua::JA::Romaji::Valid;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 my %aliases = (
   loose         => 'ISO3602Loose',
@@ -37,7 +37,9 @@ sub verbose { shift->{rule}->verbose(@_) }
 sub as_romaji {
   my ($self, $word, @extra_filters) = @_;
 
-  $word = lc $word or return;
+  return unless defined $word;
+
+  $word = quotemeta lc $word;
 
   return unless $self->{rule}->_prepare( \$word, @extra_filters );
 
@@ -60,7 +62,9 @@ sub as_romaji {
 sub as_name {
   my ($self, $word, @extra_filters) = @_;
 
-  $word = lc $word or return;
+  return unless defined $word;
+
+  $word = quotemeta lc $word;
 
   push @extra_filters, qw(
     prohibit_initial_n
@@ -88,10 +92,12 @@ sub as_name {
 sub as_fullname {
   my ($self, $word, @extra_filters) = @_;
 
-  $word = lc $word or return;
+  return unless defined $word;
+
+  $word = quotemeta lc $word;
 
   # XXX: allow comma separated name: should this be optional?
-  my $rule = qr/\s+|\s*,\s*/;
+  my $rule = qr/(?:\\?\s)+|(?:\\?\s)*(?:\\?,)(?:\\?\s)*/;
   my @parts = split $rule, $word;
 
   # Japanese full name should have both first and last names
